@@ -2,6 +2,42 @@
 
 https://youtu.be/J3GrISCyK-8
 
+### $match
+
+* Since is an aggregation operator, we must prepen a `$`
+* It can be used in multiple time, and virtully every other stage can be used after it.
+* Think as a filter, not a find
+* It Uses standart MongoDB query operators
+* The only limitation are, we can use `$where` operator, and if we use the `$test` operator the `$match` stage must be the first stage of the pipeline.
+* If `$match` stage is the first of the pipeline, it can take advantege of indexes
+* `$match` does not allow for projection
+
+Example:
+
+```
+db.solarSystem.aggregate([
+  { $match: { type: { $ne:"Star"} } }
+]).pretty()
+```
+
+Lets add another stage (to count the planets):
+
+```
+db.solarSystem.aggregate([
+  { $match: { type: { $ne:"Star"} }},
+  { $count: "planets" }
+])
+```
+
+**Key things to Remember**
+
+* A `$match` stage may contain a `$text` query operator, but it must be the first stage in the pipeline
+* `$match` should come early in the aggregation pipeline
+* You cannot use `$where` with `$match`
+* `$match` uses the same query syntax as find
+
+
+[`$match` documentation page](https://docs.mongodb.com/manual/reference/operator/aggregation/match/)
 
 
 now that we've discussed the concept of
