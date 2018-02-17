@@ -165,3 +165,140 @@ through a pipe finally with only a few
 exceptions which we'll cover later
 stages can be arranged in any way we
 like and as many as we require
+
+
+---
+
+### m121 aggregation structure and syntax
+
+https://youtu.be/SYtRQ5crN6U
+
+[Aggregation Pipeline Quick Reference](https://docs.mongodb.com/manual/meta/aggregation-quick-reference/)
+
+**Operators**
+
+* Operators are the query operators or aggregation stages, `$match`, `$project`, `$in`, `$gte`, `$lte`
+* Operator appear in the **key** position of a document.
+
+**Expressions**
+
+* Expressions act a lot like functions, we provide arguments and they provide a computed output, `$gt`, `"$numberOfMoons"`
+* Allways appear in a value position
+
+**Important**
+
+* Field Path: `"$fieldName" ("$numberOfMoons")`
+
+Is use to access a field in the document
+
+* System Variable: `"$$UPPERCASE" ("$$CURRENT")`
+
+Is used to access system level variable
+
+* User Variable: `"$$foo"`
+
+Is used to access user level variable
+
+**Aggregation Structure and Syntax Rules:**
+
+* Pipelines are always an array of one o more stages
+* Stages are composed of one or more aggregation operators of expressions
+  - Expressions may take a single argument or an array of arguments. This is expression dependant.
+
+
+
+
+let's take a few minutes to talk about
+the structure and syntax of the
+aggregation framework the aggregation
+framework has a simple and reliable
+structure and repeatable syntax
+pipelines may contain one or more stages
+each stage is a JSON object of key value
+pairs with only a few exceptions we can
+have as many stages as we like
+additionally options may be passed in
+for example specifying whether to allow
+disk use for large aggregations or to
+view the explained plan of the
+aggregation to see whether it is using
+indexes or if the server optimize the
+pipeline let's take a look at a very
+simple but very real pipeline and
+discuss the syntax here we have a match
+stage that checks whether the
+atmospheric composition contains oxygen
+or not and if the mean temperature falls
+within this range then we have a project
+stage that reshapes the document and
+calculates the new value more on this in
+a moment lastly this is our options
+object each stage is composed of other
+operators or expressions as we continue
+through the course you'll be introduced
+in many of these make sure you bookmark
+the aggregation pipeline quick reference
+page link below this video
+throughout the course we'll be using the
+terms operator and expression and it's
+vital that you can quickly access the
+documentation for these so what's an
+operator for this course when we say
+operators we mean other query operators
+or aggregation stages in this example
+dollar matched in dollar project or
+aggregation operators and dollar in
+dollar GTE and dollar ltée our query
+operators as a general rule operators
+always appear in the key position of a
+document dollar match is a little
+special and we'll learn about it later
+what's an expression expressions act a
+lot like functions we provide arguments
+and they provide a computed output and
+just like functions expressions can be
+composed its form powerful new data
+transformations MongoDB provides
+expressions for working with and
+producing values from many types of
+values in the project stage dollar GT is
+an expression
+this arguments are supplied in this
+array this dollar number of moons
+surrendered by the quotes is also an
+expression that you'll learn about in a
+moment and easy way to remember how to
+use expressions is it will always appear
+in a value position let's run this now
+to see the output here we see the result
+of the calculated field it looks like
+Earth is the only planet that has oxygen
+as a relatively comfortable temperature
+and it does indeed have news one more
+important thing to cover we may
+encounter syntax like this the first is
+a field path expression it's used to
+access the value of a field in the
+document like number of moons in the
+first example the second with two dollar
+signs followed by an uppercase word is a
+system-level variable dollar current
+refers to the current document and you
+can find the meaning of others on the
+quick reference page the last with two
+dollar Suns followed by a lowercase word
+is a user variable some expressions let
+us temporarily bind a value to a name or
+provide us a special name to access some
+data and there we go the aggregation
+framework structure and syntax we highly
+recommend you use an editor that has
+bracket matching block striking your
+pipelines to make noticing errors easier
+there's just a few things to remember
+pipelines are always an array of one or
+more stages stages are composed of one
+or more aggregation operators or
+expressions expressions may take a
+single argument or an array of arguments
+see in the next lesson
