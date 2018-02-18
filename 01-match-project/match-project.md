@@ -39,6 +39,12 @@ db.solarSystem.aggregate([
 
 [`$match` documentation page](https://docs.mongodb.com/manual/reference/operator/aggregation/match/)
 
+Please connect to the class Atlas cluster through the mongo shell. The full command is:
+
+
+    mongo "mongodb://cluster0-shard-00-00-jxeqq.mongodb.net:27017,cluster0-shard-00-01-jxeqq.mongodb.net:27017,cluster0-shard-00-02-jxeqq.mongodb.net:27017/aggregations?replicaSet=Cluster0-shard-0" --authenticationDatabase admin --ssl -u m121 -p aggregations --norc
+    
+
 
 now that we've discussed the concept of
 what pipelines are and have given you an
@@ -119,3 +125,9 @@ match come early in an aggregation
 pipeline you cannot use dollar where
 with match and match uses the same query
 syntax as find
+
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> load('validateLab1.js');
+true
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> validateLab1(pipeline)
+Answer is 15
+MongoDB Enterprise Cluster0-shard-0:PRIMARY> 
