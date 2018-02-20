@@ -354,3 +354,23 @@ in an aggregation pipeline
 
 
 ---
+
+
+```
+db.movies.aggregate([
+  { $project: { _id:0, title:1, cast : 1, countries: 1,"tomatoes.viewer.rating": 1} },
+  { $match : {"tomatoes.viewer.rating" : {$gte : 3} } },
+  { $match : { countries: "USA"}} ,
+  {
+    $addFields: { 
+      arr_favs: { $setIntersection: [ "$cast", favorites ] } 
+    }
+  },
+  { $match : {arr_favs : {$ne : null} } },
+  { $match : {arr_favs : {$ne : []} } },
+  { $addFields: { num_favs: { $size: "$arr_favs" } } },
+  { $sort : {num_favs: -1 , "tomatoes.viewer.rating":-1, title:-1}},
+        { $skip : 24} ,
+        { $limit : 1} 
+])  
+```
