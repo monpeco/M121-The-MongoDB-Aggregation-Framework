@@ -257,3 +257,132 @@ accumulator expressions of a thin group
 group can be used multiple times within
 a pipeline and it may be necessary to
 sanitize incoming data
+
+---
+
+### m121 accumulator project
+
+https://youtu.be/iAC3CPW08rk
+
+> Examples missing
+
+let's take a moment to learn about using
+accumulator expressions with the project
+stage knowledge of how to use these
+expressions can greatly simplify our
+work one important thing to keep in mind
+is that accumulator expressions within
+project we're over an array within the
+given document they do not carry values
+forward to each document encountered
+let's suppose we have a collection named
+example with the schema if we perform
+this aggregation this will be the result
+an output document for every input
+document with the average of that
+documents data field for this lesson
+we're going to explore this data set
+it's the average monthly low and high
+temperature for the United States as
+well as monthly ice cream consumer price
+index and sales information and here's
+what the data looks like in our
+collection we can see we have a trends
+array with documents that contain all
+the information we'll need easy enough
+to work with let's go ahead and find the
+maximum and minimum values for the
+average high temperature we'll explore
+two different methods to find the
+maximum first we'll use the dollar
+reduce expression to manually find the
+maximum before I run this let's break it
+down here I'm specifying the reduce
+expression reduce takes an array as a
+simple argument here for the argument to
+initial value the value our accumulator
+will begin with we're specifying
+negative infinity I hope we'll never
+have a monthly average high temperature
+of negative infinity but in all
+seriousness we're using negative
+infinity because any reasonable value we
+encounter should be greater lastly with
+specified the logic to the in field here
+this is using the dollar common
+conditional operator and saying if
+dollar dollar this dot average high
+temperature is greater than the value
+which is held in our accumulator then
+return this dot an average high
+temperature otherwise just return the
+value back
+so compare the current value against the
+accumulator value and if it's greater
+we're
+place it with the value we just
+encountered otherwise we'll just keep
+using our current max value notice the
+devil dollar signs these are temporary
+variables is defined for use only within
+the dollar reduce expression as we
+mentioned in the aggregation structure
+and syntax lesson dollar this refers to
+the current element in the array dollar
+value refers to the accumulator value it
+will do this for every element in the
+array okay let's run this and we see the
+max I was 87 wow that was pretty
+complicated let's look at an easier way
+to accomplish this I think we can all
+agree that this is much simpler we use
+the dollar max group accumulator
+expression to get the information we
+want and again we get max high of 87
+okay let's get the minimum average
+temperature here we use the dollar min
+accumulator expression and we can see
+our max low oops 27 all right we now
+know how to use Max and min we can also
+calculate averages and standard
+deviations let's calculate the average
+consumer price index for ice cream as
+well as the standard deviation here
+we're calculating both in one pass for
+the average CPI filled with specified
+the dollar AVG average expression
+telling it to average of the values in
+the ice cream CPI field in the trends
+array and here the CPI deviation is
+calculated almost identically except
+we're using the population standard
+deviation we're using standard deviation
+pop because we're looking at the entire
+set of data however as this was only a
+sample of our data we'd use the sample
+standard deviation expression great we
+concede that the average consumer price
+index was 221 point to 75 and the
+standard deviation was around six point
+six three we could use this information
+to find data that is outside norms to
+point to areas that might need special
+analysis the last accumulator expression
+I'd like to show is dollar sum
+as the name implies some sums up the
+values of an array we can see that the
+yearly sales were 1601 million and that
+covers accumulator expressions available
+with them project here are a few things
+to keep in mind the available
+accumulator expressions in project are
+some average max-min standard deviation
+population and standard deviation sample
+within project these expressions will
+not carry their value forward and
+operate across multiple documents for
+this we need to use the unwind stage and
+group accumulator expressions for more
+complex calculations as handy to know
+how to use dollar reduce and dollar map
+
