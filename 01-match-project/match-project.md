@@ -354,3 +354,8 @@ aggregation pipeline and finally project
 can be used to reassign values to
 existing field names and to derive
 entirely new fields
+
+
+### SQL to Aggregation Mapping Chart
+https://docs.mongodb.com/manual/reference/sql-aggregation-comparison/
+
