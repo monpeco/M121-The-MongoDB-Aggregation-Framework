@@ -743,3 +743,263 @@ short-form and long-form using unwind on
 large collections with big documents may
 lead to performing issues
 
+---
+
+### m121 lookup
+
+https://youtu.be/s1KD_Qt7vY4
+
+```
+$lookup: {
+  from: <collection to join>,     //The collection cannot be sharded and must exists within the same database
+  localField: <field from the input documents>,   //The field in the working collection where we express the aggregation command that we want to compare to
+  foreignField: <field from the documents of the "from" collection>,    // The field that we want to compare from in the collection we specified in "from"
+  as: <output array field>  // The new field that will contains any matches between `localField` and `foreignField`
+}
+```
+
+* `$lookup` will form a strict equality comparison
+* The `as` will overwrite any existents field with that same name
+* The result will be an array with the matches, and if there is not matches will return an empty array
+
+
+Example:
+
+**working documents: air_airlines**
+```
+{
+  name: "Penguin Air",
+  country: "Antartica",
+  ...
+}
+{
+  name: "Delta Air Lines",
+  country: "United States",
+  ...
+}
+{
+  name: "Lufthansa",
+  country: "Germany",
+  ...
+}
+```
+
+**air_alliances**
+
+```
+{
+  name: "Star Alliance",
+  airlines: ["Lufthansa", ...],
+  ...
+}
+{
+  name: "SkyTeam",
+  airlines: ["Delta Air Lines", ...],
+  ...
+}
+```
+
+With this parameters:
+
+```
+from: "air_alliances"
+localField: "name"        // Can be an array or a single value
+foreignField: "airlines"  // Can be an array or a single value
+as: "alliance"
+```
+
+That will produce:
+
+```
+{
+  name: "Penguin Air",
+  country: "Antartica",
+  alliance: []
+  ...
+}
+{
+  name: "Delta Air Lines",
+  country: "United States",
+  alliance: [ { name: "SkyTeam", ... } ],
+  ...
+}
+{
+  name: "Lufthansa",
+  country: "Germany",
+  alliance: [ { name: "Star Alliance", ... } ]
+
+  ...
+}
+```
+
+* Oftentimes after a `$lookup`, we want to follow it a `$match` stage ti filter documents out.
+* `$lookup` retrieves the entire document that matched, not just the field we specified (the `foreignField`).
+
+**Lets look the air_alliances collection**
+
+```
+{
+  "name" : "Star Alliance",
+  "airlines": [
+    "Air Canada",
+    "Adria Airways",
+    ...
+  ]
+}
+```
+
+**Lets look the air_airlines collection**
+
+```
+{
+  "airline" : 4,
+  "name": "Lufthansa",
+  ...
+}
+```
+
+**Lets build the pipeline:**
+
+```
+db.air_alliances.aggregate([
+{
+  $lookup: {
+    from: "air_airlines",
+    localField: "airlines",
+    foreignField: "name",
+    as: "airlines",
+  }
+}
+])
+
+{
+  "name" : "Star Alliance",
+  "airlines": [
+    {
+      name: "Delta Air Lines",
+      country: "United States",
+      alliance: [ { name: "SkyTeam", ... } ],
+      ...
+    }
+    ...
+  ]
+}
+```
+
+### Sumary
+
+* The `from` collection cannot be sharded.
+* The `from` collection must be in the same database.
+* The values in `localField` and `foreignField` are matched on equality.
+* `as` can be any name, but if it exits in the working document that field will be overwritten.
+
+
+
+now it's time we learned about looking a
+powerful stage lets you combine
+information from two collections for
+those with some knowledge of sequel
+lookup as effectively a left outer join
+if that didn't make any sense don't
+worry let's break it down in database
+terms a left outer join commands all
+documents or entries on the left with
+mashing documents or entries from the
+right so a left outer join with B would
+look like this the lookup stage has this
+form the front field here is the
+collection from which we want to look up
+documents keep in mind the collection
+you specify in the from field cannot be
+shorted and must exist within the same
+database local field here is the field
+in the working collection where we
+express the aggregation command that we
+want to compare to foreign field here is
+the field one to compare from in the
+collection we specified and from lookup
+will form a strict equality comparison
+and the as field here is the new field
+name we specify that will show up in our
+documents that contains any matches
+between local field and foreign field
+all matches would put in an array in
+this field if there were no matches the
+field will contain an empty array let's
+visualize this in an example suppose
+we're aggregating over an airline's
+collection and we want to fetch which
+Alliance the airline belongs to as the
+argument from with specify air alliances
+next we would specify name as the
+argument to local field the value we
+want to compare to the argument to local
+field can resolve to either an array or
+a single value then with specify
+Airlines as the argument to foreign
+field the value we want to compare from
+the argument foreign field can also
+resolve to either an array or a single
+volume we can see the based on the
+argument so far penguin air won't match
+anything Delta Airlines will match
+SkyTeam and Lufthansa will match Star
+Alliance those matches were brought into
+the current document as
+Alliance we could have given any string
+value we wanted but keep in mind that if
+we specify a name that already exists in
+the working document that field will be
+overridden
+notice here that because the document
+with name penguin Aaron did not have any
+results there is an empty array
+oftentimes after a lookup want to follow
+with a match stage to filter documents
+out another thing to know
+lookup retrieves the entire document
+that matched not just the field was
+specified to form field all right let's
+look at lookup in actual use let's
+combine information from the air
+Airlines collection with the air
+alliance's collection putting all the
+airline information within the Alliance
+document first let's look at the schema
+in our Airlines this collection okay
+the data we need for a local field is in
+the Airlines field let's look at the
+airline schema so we know what value to
+use as the foreign field alright easy
+enough
+it looks like the information we need
+for foreign field is in the name field
+that should be all the information we
+need let's build the pipeline alright we
+specify air Airlines to the from field
+Airlines as the local field name is the
+foreign field and here we chose to
+overwrite the Airlines field with the
+information we get back it makes sense
+we'll be replacing the names with entire
+documents let's see the output pretty
+cool we can see that lookup did just
+what we expected it to do we could
+follow this with some projections or
+even another lookup stage to perform
+some powerful reshaping and analysis but
+for now that's enough we've covered a
+lot of information in this lesson lookup
+is a powerful stage that can help reduce
+Network requests and combine information
+from different collections together for
+powerful and deep analysis here are a
+few things to keep in mind the from
+field cannot be shortened the from
+collection must be in the same database
+the values in local field and foreign
+field are matched on equality and the
+ask can be any name but if it exists in
+the working document that field will be
+overwritten
+
