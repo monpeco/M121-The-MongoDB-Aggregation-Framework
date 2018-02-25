@@ -386,3 +386,360 @@ group accumulator expressions for more
 complex calculations as handy to know
 how to use dollar reduce and dollar map
 
+---
+
+### m121 unwind
+
+https://youtu.be/LPSfinOVqhw
+
+### $unwind
+
+Example:
+
+```
+{
+  "title" : "The Martian",
+  "genres" : [ "Action", "Adventure", "Sci-Fi" ]
+}
+```
+
+With `$unwind` will produce
+
+```
+{
+  "title" : "The Martian",
+  "genres" : "Action"
+}
+{
+  "title" : "The Martian",
+  "genres" : "Adventure"
+}
+{
+  "title" : "The Martian",
+  "genres" : "Sci-Fi"
+}
+```
+
+In this example:
+
+```
+{
+  "title" : "Batman Begins",
+  "likes" : [ "Action", "Adventure" ]
+}
+```
+
+With `$unwind` will produce
+
+```
+{
+  "title" : "Batman Begins",
+  "likes" : "Action"
+}
+
+{
+  "title" : "Batman Begins",
+  "likes" : "Adventure"
+}
+```
+
+In the group example, if we would try this:
+```
+$group : {
+  _id : {
+    title: "$title",
+    genre: "$genre",
+  }
+}
+```
+
+Will produce
+
+```
+{                                      {
+  "title" : "Star Trek",                 "title" : "Star Trek",
+  "genre" : [                            "genre" : [ 
+    "Adventure",              <>           "Action", 
+    "Action"                               "Adventure"
+  ]                                      ] 
+}                                      }
+
+```
+
+Let see a real example:
+
+```
+db.movies.aggregate([
+{
+  $match: {
+    "imdb.rating": { $gt: 0 },
+    year: { $gte: 2010, $lte: 2015 },
+    runtime: { $gte: 90 }
+  }
+},
+]) // 6035 docs
+```
+
+```
+db.movies.aggregate([
+{
+  $match: {
+    "imdb.rating": { $gt: 0 },
+    year: { $gte: 2010, $lte: 2015 },
+    runtime: { $gte: 90 }
+  }
+},
+{
+  $unwind: "$genres"
+}
+]) // 12075 docs
+```
+
+```
+db.movies.aggregate([
+{
+  $match: {
+    "imdb.rating": { $gt: 0 },
+    year: { $gte: 2010, $lte: 2015 },
+    runtime: { $gte: 90 }
+  }
+},
+{
+  $unwind: "$genres"
+},
+{
+  $group: {
+    _id: {
+      year: "$year",
+      genre: "$genres"
+    },
+    average_rating: { $avg: "$imdb.rating" }
+  }
+},
+{
+  $sort: { "_id.year": -1, average_rating: -1 }
+}
+]) // 134 docs
+
+{ "_id" : { "year" : 2015, "genre" : "Biography" }, "average_rating" : 7.423404255319149 }
+{ "_id" : { "year" : 2015, "genre" : "News" }, "average_rating" : 7.4 }
+{ "_id" : { "year" : 2015, "genre" : "Documentary" }, "average_rating" : 7.387012987012986 }
+{ "_id" : { "year" : 2015, "genre" : "Animation" }, "average_rating" : 7.107692307692308 }
+{ "_id" : { "year" : 2015, "genre" : "Music" }, "average_rating" : 7.015000000000001 }
+{ "_id" : { "year" : 2015, "genre" : "Sport" }, "average_rating" : 6.94 }
+...
+
+```
+
+We just want a single doc per year, with the highest rating genre:
+
+```
+db.movies.aggregate([
+{
+  $match: {
+    "imdb.rating": { $gt: 0 },
+    year: { $gte: 2010, $lte: 2015 },
+    runtime: { $gte: 90 }
+  }
+},
+{
+  $unwind: "$genres"
+},
+{
+  $group: {
+    _id: {
+      year: "$year",
+      genre: "$genres"
+    },
+    average_rating: { $avg: "$imdb.rating" }
+  }
+},
+{
+  $sort: { "_id.year": -1, average_rating: -1 }
+},
+{
+  $group: {
+    _id: "$_id.year",
+    genre: { $first: "$_id.genre" },
+    average_rating: { $first: "$average_rating" },
+  }
+}
+]) // 6 docs
+
+{ "_id" : 2010, "genre" : "News", "average_rating" : 7.65 }
+{ "_id" : 2011, "genre" : "Documentary", "average_rating" : 7.262857142857143 }
+{ "_id" : 2015, "genre" : "Biography", "average_rating" : 7.423404255319149 }
+{ "_id" : 2014, "genre" : "Documentary", "average_rating" : 7.212587412587413 }
+{ "_id" : 2013, "genre" : "Documentary", "average_rating" : 7.158196721311475 }
+{ "_id" : 2012, "genre" : "Talk-Show", "average_rating" : 8.2 }
+
+```
+
+```
+db.movies.aggregate([
+{
+  $match: {
+    "imdb.rating": { $gt: 0 },
+    year: { $gte: 2010, $lte: 2015 },
+    runtime: { $gte: 90 }
+  }
+},
+{
+  $unwind: "$genres"
+},
+{
+  $group: {
+    _id: {
+      year: "$year",
+      genre: "$genres"
+    },
+    average_rating: { $avg: "$imdb.rating" }
+  }
+},
+{
+  $sort: { "_id.year": -1, average_rating: -1 }
+},
+{
+  $group: {
+    _id: "$_id.year",
+    genre: { $first: "$_id.genre" },
+    average_rating: { $first: "$average_rating" },
+  }
+},
+{
+  $sort: { _id: -1}
+}
+]) // 6 docs
+
+{ "_id" : 2015, "genre" : "Biography", "average_rating" : 7.423404255319149 }
+{ "_id" : 2014, "genre" : "Documentary", "average_rating" : 7.212587412587413 }
+{ "_id" : 2013, "genre" : "Documentary", "average_rating" : 7.158196721311475 }
+{ "_id" : 2012, "genre" : "Talk-Show", "average_rating" : 8.2 }
+{ "_id" : 2011, "genre" : "Documentary", "average_rating" : 7.262857142857143 }
+{ "_id" : 2010, "genre" : "News", "average_rating" : 7.65 }
+
+```
+
+**Short form**
+
+    $unwind: <field path>
+    
+**Long form**
+
+    $unwind: {
+      path: <field path>,
+      includeArrayIndex: <string>,
+      preserveNullAndEmptyArrays: <boolean>  //Null, missing or empty array
+    }
+    
+    
+**Highlights**
+
+* $unwind only works on array values
+* There are two forms for `$unwind`, short form and long form
+* Using `$unwind` on large collections with big documents may lead to performance issues
+
+
+
+let's learn about another useful
+aggregation stage the dollar on one
+stage dollar and wine lists unwanted an
+array field creating a new document for
+every entry where the field value is now
+each entry let's visualize this with an
+example if I had the following scheme on
+the Left title and genres and unlined
+on the genres field I'll get back
+documents on the right what am I saying
+that I'm generating and document for
+each array entry when it was all tight
+and well embedded why might this be
+useful one example is when we'd like to
+group on individual entries in the grip
+lesson we grouped movies based on the
+year and we tried to group on year and
+genres we would have gotten back many
+distinct entries because within Group a
+razor mashed on pure equality not
+equivalents so this array of adventure
+action would not match this array of
+action-adventure all right
+let's use unwind for something real
+let's find the most popular genres by
+year from 2010 to 2015 with in the
+movies collection I'm going to go ahead
+and limit this and say that I'm only
+considering entries with a runtime of 90
+minutes or greater and for popularity
+I'll use a value in IMDB rating okay
+let's break this down here we begin with
+the mash stage ensuring we have an IMDB
+rating value by specifying that it must
+be greater than zero and filtering
+documents based on year and a run time
+then we unwind the genres array creating
+a new document for each entry in the
+original array then we'll group on the
+year and then now single value genres
+field and use the average expression to
+calculate the average rating from IMDB
+top rating
+finally we sort first on the year
+descending and then the average rating
+descending let's test it out hmm it's
+close but not quite there yet we can see
+we're getting the most popular genre by
+year but we're getting all results back
+we just want a single document
+with the highest-rated genre there are
+many ways to accomplish this let's look
+at one of the most simple okay let's
+examine this new pipeline it's identical
+to the previous one with the addition of
+these two stages the previous pipeline
+was returning in the format we wanted
+there were just too many documents being
+returned here in this additional group
+stage group documents together based on
+their year as since they're already
+sorted in the order we need we just take
+the first value we encounter for the
+genre and the average rating then we
+finished with the sort to make sure that
+they're returned in the order we want
+let's see if it works excellent one
+document per year with the highest rated
+genre in that year okay we've seen how
+unone works no there's a few less things
+to cover we've been using the short form
+for unwind here's the long form for
+contrast in the long form we specified
+the array we want to unwind by providing
+a field path expression to the path
+argument we can provide a string to
+include a ray index this will create an
+another field in the document with
+whatever name we specify with the value
+set to the index of the element in the
+original array lastly we can provide a
+true or frost volume to resolve noland
+empty arrays true we'll create an entry
+with an empty array of the value
+specified in the path is either null
+missing or an empty array one more thing
+of note if the documents in our
+collection are very large and we need to
+use and wined we may exceed the default
+memory limit of the aggregation
+framework as always naturally retain
+only the information needed with project
+and remember that we can specify to
+allow disk use and that covers unwind
+we've learned a lot let's recap on a few
+things
+unwind only works on an array of values
+there are two forms for unwind the
+short-form and long-form using unwind on
+large collections with big documents may
+lead to performing issues
+
