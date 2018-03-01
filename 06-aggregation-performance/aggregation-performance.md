@@ -264,3 +264,217 @@ and how you can mitigate and get around
 those issues
 
 
+---
+
+### M201 Lesson 5.5 - Aggregation Pipeline on a Sharded Cluster
+
+https://youtu.be/foaDAuafa4w
+
+* How it works
+* Where operations are completed
+* Optimizations
+
+
+On a sharded cluster this will find just in one shard
+
+```
+db.restaurants.aggregate([
+  { $match: { 'address.state': 'NY' } },
+  {
+    $group: {
+      _id: '$address.state',
+      avgStars: { $avg: '$stars'}
+    }
+  }
+])
+```
+
+
+But this will find just in all shards
+
+```
+db.restaurants.aggregate([
+  {
+    $group: {
+      _id: '$address.state',
+      avgStars: { $avg: '$stars'}
+    }
+  }
+])
+```
+
+This involves that the merging of the data happen on a random shard
+
+But this is not true when we have:
+
+* `$out`
+* `$facet`
+* `$lookup`
+* `$graphLookup`
+
+In this cases, the merge happens in the primary shard
+
+### Aggregation Optimizations
+
+```
+db.restaurants.aggregate([
+  { $sort: { 'stars': -1 } },
+  { $match: { 'cuisine': 'Sushi' } },
+])
+```
+
+Will be optimized:
+
+```
+db.restaurants.aggregate([
+  { $match: { 'cuisine': 'Sushi' } }, // To reduce the amount of document that need to be moved (specially useful in sharded clusters)
+  { $sort: { 'stars': -1 } },
+])
+```
+
+
+Similiarly:
+
+```
+db.restaurants.aggregate([
+  { $skip: 10 },
+  { $limit: 5 },
+])
+```
+
+```
+db.restaurants.aggregate([
+  { $limit: 15 },  // reduce the number of documents that need to be examinated
+  { $skip: 10 },
+])
+```
+
+Also combines stages:
+
+```
+db.restaurants.aggregate([
+  { $limit: 10 },
+  { $limit: 5 },
+])
+```
+
+```
+db.restaurants.aggregate([
+  { $limit: 15 },
+])
+```
+
+Same thing with `$skip` and `$match`
+
+in this lesson we're going to talk about
+the aggregation pipeline on a chartered
+cluster specifically we're discuss how
+it works where operations are completed
+and we'll also look into how pipelines
+are optimized to perform well on charted
+clusters let's go ahead and talk about
+how aggregation works in shard cluster
+when we run aggregation queries on a
+replica set or standalone Mongo D it's
+much easier for the server to reason
+about because all the data is located in
+one place in a shorter cluster since our
+data is partitioned across different
+shards this becomes slightly more
+difficult fortunately MongoDB has some
+good tricks up its sleeve to address
+these issues for example here we have
+the simple aggregation query when I'm
+using match to find all the restaurants
+in New York State I'm then using group
+to group by each state and then average
+the amount of stars for that given state
+this is my shard keys on state all of
+the restaurants in New York are going to
+be on the same shard this means that the
+server is able to simply route the
+aggregation query to that shard where it
+can run the aggregation and return the
+results back to the among us and then
+back to the client
+very straightforward now look at this
+example I've changed the query slightly
+so we're no longer using the match stage
+so now we're talking about all documents
+in our started collection now since
+these documents are spread across
+multiple shards we're going to need to
+do some computing on each shard but then
+we'll also need to somehow get all of
+those results to one place where we can
+merge the results together in this case
+our pipeline needs to be split the
+server will determine which stages need
+to be executed on each shard and then
+what stages need to be executed on a
+single shard one of the results from the
+other shards will be merged together
+generally merging will happen on a
+random shard but there are certain
+circumstances where this is not the case
+this isn't the case when we use dollars
+an ounce or facet or lookup or graph
+lookup for these queries the primary
+shard will do the work of merging our
+results and this is important to
+understand because if we're running
+these operations very frequently then
+one of our shards the primary shard will
+be under a lot more load than the rest
+of our cluster degrading the benefits of
+our horizontal scaling under these
+specific
+you can mitigate this issue by using a
+machine with more resources for your
+primary shard
+there are also some cool optimizations
+that the server will try to perform that
+you should be aware of most of these
+will also apply when you're not charting
+but are still helpful to know take this
+example here we have a sort followed by
+a match now the query optimizer will
+move the match in front of the sort to
+reduce the number of documents that need
+to be sorted this is particularly useful
+in charted clusters when we have a split
+in our pipeline and when you want to
+reduce the amount of data being
+transferred over the wire chart merging
+shard similarly we can reduce the number
+of documents that we need to examine by
+moving the limit after a skip in front
+of it notice that the query planner
+updates the values accordingly to
+support this optimization other than
+moving stages around the server is also
+able to combine certain stages together
+here we're gonna see where we're
+combining two limits into one same thing
+with skip and finally we're seeing the
+same thing with match now all these
+optimizations will automatically be
+attempted by the query optimizer that
+being said I think it's important to
+point out these optimizations so you can
+more carefully consider your own
+aggregation pipelines and their
+performance implications and that should
+give you a good overview of the
+aggregation pipeline on a chartered
+cluster let's recap what we learned we
+discussed how the aggregation pipeline
+works on a sharted environment and
+specifically we looked at where the
+different operations happen when we're
+using sharding and finally we looked at
+some optimizations that the server will
+try to do when running aggregation
+queries
+
+
