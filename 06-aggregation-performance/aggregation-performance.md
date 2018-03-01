@@ -366,6 +366,13 @@ db.restaurants.aggregate([
 
 Same thing with `$skip` and `$match`
 
+**Lecture Notes**
+Note: At 3:05, the two $limit stages will actually coalesce to one limit stage of $limit: 5, not $limit: 15 as displayed in the video.
+
+You can learn more about aggregation in a sharded cluster by visiting the [Aggregation Pipeline and Sharded Collections section of the MongoDB Manual](https://docs.mongodb.com/manual/core/aggregation-pipeline-sharded-collections/).
+
+
+
 in this lesson we're going to talk about
 the aggregation pipeline on a chartered
 cluster specifically we're discuss how
