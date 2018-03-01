@@ -193,3 +193,191 @@ It will not create or overwrite data if pipeline errors.
 And it creates collections in the same database as the source
 collection.
 
+---
+
+### m121 views
+
+https://youtu.be/2BEw9CdRjoY
+
+* Vertical slicing => `$project`
+* Horizontal slicing => `match`
+
+let's now discuss a powerful feature of
+MongoDB views MongoDB enables non
+materialized views meaning they are
+computed every time a read operation is
+performed against that view there are a
+way to use an aggregation pipeline as a
+collection from the user perspective
+views are perceived as collections with
+some key differences we'll go over later
+in the lesson so what might views be
+useful for suppose were a large
+financial institution with customers of
+different tiers we've just recently
+launched a big promotion and are
+conducting a phone campaign we've hired
+a temporary staffing agency with several
+regional offices we'll assign a
+different tier to each recent law office
+this is a sample of one record from our
+customers collection as we can see there
+are sensitive and potentially biasing
+information that we do not want to allow
+access to you views allow us to create
+vertical and horizontal slices of our
+collection what do we mean by a
+horizontal and vertical slice vertical
+slicing is performed through the use of
+a project stage and other similar stages
+that change the shape of the document
+being returned here we vertically sliced
+our document to only retain the account
+type field vertical slices will change
+the shape being returned but not the
+number of documents being returned
+horizontal slicing is performed through
+the use of matched stages we select only
+a subset of documents based on some
+criteria here we horizontally slice our
+collection with the value of the account
+type in fact the documents that are
+grayed out would not be operated on at
+all by the following project stage we
+could further slice of data horizontally
+by only selecting accounts that had a
+specified minimum balance and there with
+an undesired age range and you get the
+idea it may even be necessary to use an
+intermediary shaken stage to calculate a
+value that we wish to filter documents
+on horizontal slices will affect the
+number of documents returned not their
+shape let's look at another example of
+this with documents that have the
+following schema we'd like to vertically
+slice the documents to remove sensitive
+information as well as make the name and
+gender information available but present
+it in a more formal format for the call
+center employees we'd also like to
+horizontally slice our collection by
+filtering out documents you do not have
+an account type of bronze here's an
+example creating a view that performs
+both horizontal and vertical slicing to
+make data available for the call center
+we're going to assign bronze tier
+members we specify the name of the view
+the source collection and then the
+pipeline that will get stored to compute
+this view within the pipeline we perform
+our initial horizontal slice with a
+match stage selecting only bronze tier
+members then within the project stage we
+perform our vertical slicing retaining
+fields we want and reassigning the name
+field with a more formally formatted
+name you can see this view in action
+yourself let's run the command to get
+collection information for the current
+database here we see information about
+every collection I've already created
+three views bronze banking silver
+banking and gold banking we can see they
+show up just like collections except
+their type of view and then the options
+we can see the view that they are on and
+the pipeline that defines them you won't
+be able to create views on the class
+Atlas cluster if you'd like to see these
+views in action and how restrictive they
+can be along with proper role based
+access control the login credentials are
+contained in the handout in this lesson
+if you'd like to learn more about role
+based access control refer to our
+security course which is linked below
+this video views can be created in two
+different ways we have the shell helper
+method DB tech create view in which I
+already saw and the create collection
+method here a view consists in the name
+a source collection and aggregation
+pipeline and if required as
+specific collation in essence when we
+call of you will be executing the
+aggregation pipeline that is used to
+define the view view meta information to
+include the pipeline that computes the
+view is stored in the system dot views
+collection let's look at this
+information again we can see the same
+information we saw before with the gate
+collection infos command but now only
+for our views hopefully this illustrates
+that the only information stored about a
+view is the name the source collection
+the pipeline that defines it and
+optionally the collation all collection
+read operations are available as views
+and yes we can perform aggregations on
+these two views do have some
+restrictions no write operations these
+are read-only and computed when we issue
+a read operation against them they are a
+reflection of the defined aggregation on
+the source collection no index
+operations since the views use the
+source collection to get their data the
+index operations need to be performed on
+that source collection the usable use
+the source collections indexes during
+their creation no renaming view names
+are immutable so they cannot be renamed
+that said we can always drop a view and
+created again with a new pipeline
+without affecting io of the server no
+dollar text the text query operator can
+only be used in the first stage of an
+aggregation pipeline and a view will ask
+you the defined pipeline first this
+query operator cannot be used in a view
+no jr. or the jr. stage same as with
+text jr. is required to be the first
+stage of our pipeline collation
+restrictions do use have collation
+restrictions such as views do not
+inherit the default collation of the
+source collection as specified there are
+other collation specific concerns which
+you can read about but following the
+link below this video lastly find
+operations where the following
+projection operators are not permitted
+we're moving and retaining fields is
+allowed
+but trying to use any of these operators
+will fail view definitions are public
+any role that can list collections on
+our database can see a view definition
+as we saw earlier avoid referring to
+sensitive information within the
+defining pipeline alright that sums up
+views here are a few things to remember
+views contain no data themselves they're
+created on demand and reflect the data
+in the source collection user read-only
+write operations two views will error
+views have some restrictions they must
+abide by the rules of the aggregation
+framework and cannot contain to find
+projection operators horizontal slicing
+is performed with the matched stage
+reducing the number of documents that
+are returned vertical slicing is
+performed what they project or other
+shaping stage modifying individual
+documents
+
+
