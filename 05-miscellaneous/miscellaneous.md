@@ -202,6 +202,33 @@ https://youtu.be/2BEw9CdRjoY
 * Vertical slicing => `$project`
 * Horizontal slicing => `match`
 
+We can perform:
+
+* `db.view.find()`
+* `db.view.findOne()`
+* `db.view.count()`
+* `db.view.distinct()`
+* `db.view.aggregate()`
+
+**Restrinctions**
+
+* No write operations
+* No index operations (create, update)
+* No renaming
+* Collation restrictions
+* No mapReduce
+* No `$text`
+* No `geoNear` or `$geoNear`
+* `find()` operations with projection operators are not permitted
+  - `$`
+  - `$elemMatch`
+  - `$slice`
+  - `$meta`
+
+* View definitions are public
+* Avoid referring to sensitive fields within the pipeline that defines a view
+
+
 let's now discuss a powerful feature of
 MongoDB views MongoDB enables non
 materialized views meaning they are
