@@ -485,3 +485,180 @@ try to do when running aggregation
 queries
 
 
+---
+
+### m121 pipeline optimization part 1
+
+https://youtu.be/jQu96KOQv4k
+
+let's talk about pipeline optimization
+we've already learned about using match
+and source stages early to use indexes
+using limit and source stages to produce
+top k results and how to allow the use
+of more than 100 megabytes of memory
+let's dive further and look at pipelines
+themselves and how they might be
+optimized let's consider the following
+aggregation that gets the length movie
+titles to begin with vowels and sorts
+them by the frequency so we begin with
+our match stage looking for titles the
+begin with a vowel ignoring the case we
+then project our title size composing
+size and split together and splitting
+the title on spaces in our group stage
+we're grouping like documents together
+based on that title size we just
+calculated and getting a count finally
+we're gonna sort in descending direction
+so the highest frequency should be
+coming back first we run this to get an
+idea of the results ok we can see that
+the most common length for a movie title
+appears to be 3 words and there were
+1450 documents that fell into this group
+we can also see that the most uncommon
+lengths for a movie title is 17 words
+with only one document in this group
+let's now examine the explain
+information for this aggregation okay so
+we have the same pipe plan as before but
+this time we're appending explained true
+to get the explained output let's take a
+look at the results there is a lot of
+interesting information here we can see
+what our query was the fields that were
+kept which happened to be title and
+unsubscribe D and then the query planner
+a little further down we can also see
+the winning plan the use of fetch stage
+followed by an index scan we can
+probably do a little better than this
+because we know that we have an index
+that should support this query we can
+also see the stages that were executed
+here's our converted project stage where
+we see undescribed een true this is
+implicit remember the title size where
+we calculated the size of our title and
+then we can see our group and our sort
+along with the sort key pretty
+interesting information so let's see if
+we can do better our goal is to try and
+get this to be a covered query meaning
+there is no fetch stage okay so this
+aggregation pipeline is nearly identical
+to the first one we had except I'm
+explicitly getting rid of the end of
+scribe D field remember the project
+stage implicitly keeps it unless we tell
+it not to let's see if we get the same
+results and we do indeed get the same
+results as before where it looks like
+movies with a link the three words have
+the most occurrence with 1450 documents
+okay we verified the same results let's
+check the explained output to see if
+we've improved our query performance at
+all again the same pipeline we just used
+also projecting out underscore ID just
+adding the explained true option to the
+aggregation function and looking at the
+explained plan we see again we have the
+same querying on the cursor this time
+the fields are different we're keeping
+the title and projecting away underscore
+ID let's go ahead and go down to the
+winning plan to see if we avoided that
+fetch stage all right
+so looking at our winning plan we can
+see it's much better I can see there's
+no fetch stage so our match stage was
+indeed covered when we see a fest stage
+it means MongoDB had to go to the
+document for more information rather
+than just using information from the
+index alone of some interest here we can
+also see that underscore ID was now
+projected as false this is because we
+explicitly provided that information so
+let's see if we can do even better okay
+so here's our new modified pipeline
+where we have the same mesh stage
+however this time we have no project
+stage instead we perform the logic we
+need within group and then sort on those
+results let's see it in action
+all right pretty cool we got the same
+results three words count of 1,450
+documents let's check the explained
+output to see the difference between
+this pipe line and our previous pipe
+line
+alright let's look at the explained
+output we can see that the query is the
+same we can see that the fields are the
+same as well title one underscore ID is
+zero how did the aggregation framework
+know to do this when we didn't specify a
+project stage let's cover that in a
+moment down in a winning plan we can see
+there was no fetch stage which meant
+that this is a covered query if we
+scroll all the way down to the bottom to
+look at the rest of our pipeline stages
+we can see the next stage after our
+query is group then our sort and we're
+done a key takeaway here is to avoid
+needless projects as we saw the
+aggregation framework assumed we knew
+what we were doing with each project
+however if the aggregation framework can
+determine the shape of the final
+document based only on initial input
+internally it will project away
+unnecessary fields that was a mouthful
+so let me explain that in a little more
+detail in the first math stage the only
+field we cared about was the title in
+the group stage again the only field we
+care about is the title we use this
+composition of expressions to get the
+number of words and the title but we can
+do that in line by evaluating first
+split in the title on spaces into an
+array and then getting in the size of
+the array there's no need for an
+intermediary project stage because we
+can just calculate that value in line
+here this is a very powerful feature we
+should always strive to let the
+optimizer work for us additionally this
+removes the stage that ultimately is
+timed at the pipeline
+let's think about that so we have a
+hundred thousand documents in our movies
+collection in the match we filter down
+to ten thousand
+now in group we have 10,000 documents
+come through and then sort we have maybe
+15 right well with that intermediary
+project stage that we really didn't need
+we had a hundred thousand come in then
+we have ten thousand and we'd send all
+ten thousand through that in your meter
+project before they get to the group
+stage
+that's ten thousand additional
+iterations that we just avoided so as a
+general rule don't project unless you
+are doing some real work in the stage
+and remember that ad Fields is available
+okay one last note before we move on we
+could replace group and sort by sort by
+count it really is the same under the
+hood it just saves us on typing keep
+that in mind
+
+
