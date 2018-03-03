@@ -662,3 +662,200 @@ hood it just saves us on typing keep
 that in mind
 
 
+---
+
+### m036 Pipeline optimization part 2
+
+https://youtu.be/5WZ3Q3BZEU4
+
+
+all right let's now discuss another
+common operation that developers
+encounter when using a one to end
+pattern like the attribute or the subset
+patterns such as stocks traded in a
+given moment or the top 20 customer
+reviews for a product how do we
+efficiently work with that data if we'd
+like to perform some aggregation
+framework analysis let's imagine we're
+working with documents of this schema
+that is tracking all buy and sell
+transactions on our trading platform
+we'd like to analyze how many total
+transactions we have as well as how many
+buys and sells were performed per
+timestamp and then use this data later
+in our pipeline in other words we want
+to group data in the document not across
+documents let's take a look at the
+collection and think about how we might
+accomplish this okay so we have our time
+stamp and then we have our trays array
+with many many documents okay this might
+be our first approach where we unwind
+the trades array and then group on the
+time and the action getting account and
+then group again just on the time and
+pushing the action and the count for
+that type of action into an array and
+then getting the total number of actions
+we've performed per that timestamp so we
+should get total actions per document
+with the individual numbers of buy and
+sell actions let's test it up okay we
+can see that it's the same pipeline as
+that from the previous slide we unwind
+the trades array group on the timestamp
+and the action and then group again just
+on the timestamp we've added this sort
+stage here just to ensure we get
+consistent ordering for comparison later
+on alright it gives us the results we
+expected total actions and the number of
+buy and sell actions per document this
+is a visual representation of the
+previous pipeline the black squares are
+our documents if we start with four
+documents
+and unwind a field with just three
+interests per document we now have 12
+documents we then group our documents
+twice to produce the desired results
+ending up with the same number of
+documents we started with this should
+start to feel horribly inefficient sadly
+it gets worse let's examine how this
+inefficiency impacts operations in
+chardon environment each shard performs
+the unwind initial processing for the
+first group stage will be done on the
+shards but the final grouping has to
+happen in a single location every other
+stage including the entirety of the
+second group would then take place on
+that location
+imagine if three or four other stages
+followed when not grouping across
+documents this causes needless overhead
+in network traffic and causes all stage
+after the group to be run in the
+location of the merge rather than remain
+distributed here we've shown that the
+grouping is happening on chart a in
+reality it could happen anywhere at
+random in our cluster so we really need
+a way to iterate over the array and
+perform our desired logic within the
+document thankfully we have Map Reduce
+filter and the key milena expressions
+available in the project stage to remedy
+this problem let's examine this pipeline
+we'll get the size of the resultant
+arrays by filtering to remove the action
+we don't want for that field in this
+case we only and allowed documents
+through that had the by action here the
+cell action lastly we'll just get the
+size of the trigger a to get how many
+total trays we had now this seems almost
+too simple so let's look at it in action
+again this is the same pipeline as on
+the previous slide the sort stage is
+added just to ensure we get consistent
+results so that we can do comparisons
+later awesome functionally identical
+results and not argue that this format
+is easier to reason about
+let's look at the previous output to
+compare and here are the results from
+that previous pipeline where we used the
+double group we can see the information
+we still want is embedded within this
+actions array this is a visualization of
+our new pipeline our new pipeline
+produced functionally identical results
+but visually what you see in the
+execution is much different rather than
+performing unnecessary work and possibly
+moving and collapsing our pipeline to a
+single location causing a slowdown and
+extra network usage we retain the same
+number of documents performing the work
+in a targeted manner and in place and
+then the shard environment the benefits
+are tangible as well we've kept all work
+distributed among the shards all right
+but wait but wait that's all fun for
+essentially binary input when we want to
+count the occurrence of something but
+what if we want to do something more
+meaningful what if we'd like to find how
+many times a specific stock was bought
+sold and what the total price was for
+each let's find that information out
+from MongoDB stock again Map Reduce
+filter and the him later expressions
+available on project stage are amazing
+tools so this is one example pipeline
+that would produce those results for us
+first we specify the reduce expression
+as the input array we'll go ahead and
+filter the Trey's array filtering out
+any stock ticker that isn't equal to
+MongoDB the initial value and the value
+that will be used as the accumulator
+value dollar dollar value we're going to
+specify this document with two keys buy
+and sell that are each documents with
+keys of total count and total value here
+in in is our logic we start with this
+conditional expression where we check if
+this dot action is equal to buy remember
+dollar dollar this refers to the current
+element of the input array
+remember we filtered that so we know
+we're only gonna get documents that had
+MDB as the ticker symbol so if it is a
+buy action we modify the total count by
+adding one $2 dollar value by no account
+remember dollar dollar value refers to
+the accumulator which we set initially
+to be this value right here we also
+modify total value by adding this dot
+price $2 dollar value by total value and
+if this was a buy action we don't modify
+cell in any way we just reassign it back
+to itself if it is a sell action we
+essentially do the same thing adding one
+to cell total count and adding this dot
+price to sell total value and then
+finally reassigning buy back to itself
+because this was a cell we can see that
+based on manga to be only the buy total
+account was 10 and the self total
+countless five for this specific
+document we can also see the dollar
+value associated with all the
+transactions again we see 22 and 19 and
+the value associated alright we've
+covered a lot of information in this
+lesson let's go ahead and summarize what
+we talked about first avoid unnecessary
+stages the aggregation framework can
+project feels automatically if the final
+shape of the output document can be
+determined from initial input second
+using human ladder expressions as well
+as dollar map dollar produce and dollar
+filter expressions in project stages
+before an unwind if possible again this
+only applies if you need to group within
+a document
+not among your documents lastly every
+high order array function can be
+implemented without reduce if the
+provided expressions do not meet your
+needs
+
+
