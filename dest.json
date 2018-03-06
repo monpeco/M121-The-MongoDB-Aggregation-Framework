@@ -1,147 +1,145 @@
-2018-03-05T21:01:53.159+0000 I NETWORK  [thread1] Starting new replica set monitor for Cluster0-shard-0/cluster0-shard-00-00-jxeqq.mongodb.net:27017,cluster0-shard-00-01-jxeqq.mongodb.net:27017,cluster0-shard-00-02-jxeqq.mongodb.net:27017
-2018-03-05T21:01:53.160+0000 I NETWORK  [ReplicaSetMonitorWatcher] starting
-2018-03-05T21:01:53.316+0000 I NETWORK  [thread1] Successfully connected to cluster0-shard-00-02-jxeqq.mongodb.net:27017 (1 connections now open to cluster0-shard-00-02-jxeqq.mongodb.net:27017 with a 5 second timeout)
-{
+db.dest.insertMany([{
 	"_id" : ObjectId("56e9b39b732b6122f8781028"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "American Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f878110a"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "American Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f878236b"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Air India Limited"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f8781faf"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Air France"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f8782bfb"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Finnair"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f8781fe4"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Air France"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f878237c"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Air India Limited"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f8782c21"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Finnair"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f87833b5"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "British Airways"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f8783318"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "British Airways"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f8784ce3"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Delta Air Lines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39b732b6122f8784c0c"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Delta Air Lines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f878794d"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Iberia Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f8787991"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Iberia Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f8788c67"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Kuwait Airways"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f8788c42"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Kuwait Airways"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f878898f"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "KLM Royal Dutch Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f87889c3"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "KLM Royal Dutch Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f878992c"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Malaysia Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f87898bd"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Malaysia Airlines"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f878e269"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "US Airways"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f878e2ed"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "US Airways"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f878eb62"),
 	"src_airport" : "JFK",
 	"dst_airport" : "LHR",
 	"airlineName" : "Virgin Atlantic Airways"
-}
+},
 {
 	"_id" : ObjectId("56e9b39c732b6122f878eb7f"),
 	"src_airport" : "LHR",
 	"dst_airport" : "JFK",
 	"airlineName" : "Virgin Atlantic Airways"
 }
+])
